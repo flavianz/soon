@@ -1,0 +1,37 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "europe-west6",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "soon",
+        "supportEmail": "flavianzullig@gmail.com"
+      }
+    }
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "edulounge-6b112",
+          "appId": "1:851483564872:android:cfd2adaf74cc132472317d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "edulounge-6b112",
+          "configurations": {
+            "android": "1:851483564872:android:cfd2adaf74cc132472317d",
+            "web": "1:851483564872:web:f62ba3af5832b40e72317d"
+          }
+        }
+      }
+    }
+  }
+}

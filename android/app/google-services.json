@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851483564872",
+    "project_id": "edulounge-6b112",
+    "storage_bucket": "edulounge-6b112.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851483564872:android:cfd2adaf74cc132472317d",
+        "android_client_info": {
+          "package_name": "ch.flavianz.soon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzqMfQv6T38sFoBYKqzUFKq-_afHTvkVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
