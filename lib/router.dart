@@ -8,9 +8,11 @@ final router = GoRouter(
     ShellRoute(
       builder: (context, state, child) {
         return Scaffold(
-          body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: child,
+          body: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: child,
+            ),
           ),
         );
       },
