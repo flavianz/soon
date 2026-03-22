@@ -17,9 +17,12 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final inputController = TextEditingController();
-  TaskEffort effort = TaskEffort.easy;
 
+  TaskEffort effort = TaskEffort.easy;
   DateTime deadline = DateTime.now();
+
+  bool isEditMode = false;
+  Task? editTask;
 
   @override
   void dispose() {
@@ -43,13 +46,24 @@ class _HomePageState extends ConsumerState<HomePage> {
       (task1, task2) =>
           task1.deadlineTimestamp.compareTo(task2.deadlineTimestamp),
     );
+
+    onEdit(Task task) {
+      setState(() {
+        isEditMode = true;
+        editTask = task;
+        inputController.text = task.description;
+        deadline = task.deadlineTimestamp.addDays(-1);
+        effort = task.effort;
+      });
+    }
+
     final openTasks = tasks
         .where((task) => !task.hasBeenCompleted())
-        .map((task) => TaskCard(task: task))
+        .map((task) => TaskCard(task: task, onEdit: onEdit))
         .toList();
     final completedTasks = tasks
         .where((task) => task.hasBeenCompleted())
-        .map((task) => TaskCard(task: task))
+        .map((task) => TaskCard(task: task, onEdit: onEdit))
         .toList();
 
     return DefaultTabController(
@@ -89,6 +103,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 child: Column(
                   children: [
+                    isEditMode
+                        ? Text(
+                            "Editing: ${editTask!.description}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          )
+                        : SizedBox.shrink(),
                     TextField(
                       controller: inputController,
                       decoration: InputDecoration(
@@ -167,26 +190,51 @@ class _HomePageState extends ConsumerState<HomePage> {
                         FilledButton.icon(
                           icon: Icon(Icons.check),
                           onPressed: () async {
-                            await FirebaseFirestore.instance
-                                .collection("tasks")
-                                .add({
-                                  "description": inputController.text,
-                                  "creation_timestamp": Timestamp.now(),
-                                  "deadline_timestamp": Timestamp.fromDate(
-                                    deadline.getDayStart().addDays(1),
-                                  ),
-                                  "effort": switch (effort) {
-                                    TaskEffort.easy => "easy",
-                                    TaskEffort.medium => "medium",
-                                    TaskEffort.hard => "hard",
-                                    TaskEffort.veryHard => "very_hard",
-                                  },
-                                  "has_been_completed": false,
-                                  "user":
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                });
+                            if (isEditMode) {
+                              await FirebaseFirestore.instance
+                                  .collection("tasks")
+                                  .doc(editTask!.id)
+                                  .update({
+                                    "description": inputController.text,
+                                    "deadline_timestamp": Timestamp.fromDate(
+                                      deadline.getDayStart().addDays(1),
+                                    ),
+                                    "effort": switch (effort) {
+                                      TaskEffort.easy => "easy",
+                                      TaskEffort.medium => "medium",
+                                      TaskEffort.hard => "hard",
+                                      TaskEffort.veryHard => "very_hard",
+                                    },
+                                  });
+                            } else {
+                              await FirebaseFirestore.instance
+                                  .collection("tasks")
+                                  .add({
+                                    "description": inputController.text,
+                                    "creation_timestamp": Timestamp.now(),
+                                    "deadline_timestamp": Timestamp.fromDate(
+                                      deadline.getDayStart().addDays(1),
+                                    ),
+                                    "effort": switch (effort) {
+                                      TaskEffort.easy => "easy",
+                                      TaskEffort.medium => "medium",
+                                      TaskEffort.hard => "hard",
+                                      TaskEffort.veryHard => "very_hard",
+                                    },
+                                    "has_been_completed": false,
+                                    "user":
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                  });
+                            }
+                            setState(() {
+                              isEditMode = false;
+                              editTask = null;
+                              effort = TaskEffort.easy;
+                              deadline = DateTime.now();
+                              inputController.clear();
+                            });
                           },
-                          label: Text("Done"),
+                          label: Text(isEditMode ? "Done" : "Add"),
                         ),
                       ],
                     ),

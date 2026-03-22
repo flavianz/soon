@@ -6,8 +6,9 @@ import '../utils.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
+  final Function(Task) onEdit;
 
-  const TaskCard({super.key, required this.task});
+  const TaskCard({super.key, required this.task, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class TaskCard extends StatelessWidget {
                 "completion_timestamp": Timestamp.now(),
               });
         } else {
-          print("right");
+          onEdit(task);
         }
         return false;
       },
