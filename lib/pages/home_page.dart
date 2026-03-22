@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soon/components/task_card.dart';
 import 'package:soon/providers.dart';
+import 'package:soon/utils.dart';
+
+import '../core/task.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -14,6 +17,9 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final inputController = TextEditingController();
+  TaskEffort effort = TaskEffort.easy;
+
+  DateTime deadline = DateTime.now();
 
   @override
   void dispose() {
@@ -94,19 +100,91 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        OutlinedButton(onPressed: () {}, child: Text("Today")),
-                        OutlinedButton(onPressed: () {}, child: Text("Medium")),
+                        OutlinedButton(
+                          onPressed: () async {
+                            if (deadline.isBefore(DateTime.now().addDays(2))) {
+                              setState(() {
+                                deadline = deadline.addDays(1);
+                              });
+                            } else {
+                              final pickedDate = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().addMonths(12 * 10),
+                              );
+                              if (pickedDate != null) {
+                                setState(() {
+                                  deadline = pickedDate;
+                                });
+                              }
+                            }
+                          },
+                          child: Text(() {
+                            if (deadline.isSameDate(DateTime.now())) {
+                              return "Today";
+                            }
+                            if (deadline.isSameDate(
+                              DateTime.now().addDays(1),
+                            )) {
+                              return "Tomorrow";
+                            }
+                            if (deadline
+                                    .difference(DateTime.now())
+                                    .abs()
+                                    .inDays <
+                                6) {
+                              return deadline.getWeekdayAbbreviation();
+                            }
+                            return deadline.toFormattedDateString();
+                          }()),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: switch (effort) {
+                              TaskEffort.easy => Colors.green.shade600,
+                              TaskEffort.medium => Colors.yellow.shade800,
+                              TaskEffort.hard => Colors.orange.shade900,
+                              TaskEffort.veryHard => Colors.redAccent.shade400,
+                            },
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              effort = switch (effort) {
+                                TaskEffort.easy => TaskEffort.medium,
+                                TaskEffort.medium => TaskEffort.hard,
+                                TaskEffort.hard => TaskEffort.veryHard,
+                                TaskEffort.veryHard => TaskEffort.easy,
+                              };
+                            });
+                          },
+                          child: Text(switch (effort) {
+                            TaskEffort.easy => "Easy",
+                            TaskEffort.medium => "Medium",
+                            TaskEffort.hard => "Hard",
+                            TaskEffort.veryHard => "Very Hard",
+                          }),
+                        ),
                         FilledButton.icon(
                           icon: Icon(Icons.check),
-                          onPressed: () {
-                            FirebaseFirestore.instance.collection("tasks").add({
-                              "description": inputController.text,
-                              "creation_timestamp": Timestamp.now(),
-                              "deadline_timestamp": Timestamp.now(),
-                              "effort": "medium",
-                              "has_been_completed": false,
-                              "user": FirebaseAuth.instance.currentUser!.uid,
-                            });
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection("tasks")
+                                .add({
+                                  "description": inputController.text,
+                                  "creation_timestamp": Timestamp.now(),
+                                  "deadline_timestamp": Timestamp.fromDate(
+                                    deadline.getDayStart().addDays(1),
+                                  ),
+                                  "effort": switch (effort) {
+                                    TaskEffort.easy => "easy",
+                                    TaskEffort.medium => "medium",
+                                    TaskEffort.hard => "hard",
+                                    TaskEffort.veryHard => "very_hard",
+                                  },
+                                  "has_been_completed": false,
+                                  "user":
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                });
                           },
                           label: Text("Done"),
                         ),

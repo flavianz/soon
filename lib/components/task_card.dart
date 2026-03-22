@@ -51,10 +51,10 @@ class TaskCard extends StatelessWidget {
                 constraints: BoxConstraints(minHeight: 18, minWidth: 18),
                 decoration: BoxDecoration(
                   color: switch (task.effort) {
-                    TaskEffort.easy => Colors.green.shade100,
-                    TaskEffort.medium => Colors.yellow.shade500,
-                    TaskEffort.hard => Colors.orange.shade500,
-                    TaskEffort.veryHard => Colors.redAccent.shade100,
+                    TaskEffort.easy => Colors.green.shade600,
+                    TaskEffort.medium => Colors.yellow.shade700,
+                    TaskEffort.hard => Colors.orange.shade900,
+                    TaskEffort.veryHard => Colors.redAccent.shade400,
                   },
                   borderRadius: BorderRadius.circular(100),
                 ),
