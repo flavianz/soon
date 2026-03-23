@@ -152,10 +152,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                               return "Tomorrow";
                             }
                             if (deadline
-                                    .difference(DateTime.now())
-                                    .abs()
-                                    .inDays <
-                                6) {
+                                        .difference(DateTime.now())
+                                        .inDays
+                                        .abs() <
+                                    6 &&
+                                deadline.isAfter(DateTime.now())) {
                               return deadline.getWeekdayAbbreviation();
                             }
                             return deadline.toFormattedDateString();
