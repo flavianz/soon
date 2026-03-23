@@ -16,10 +16,13 @@ class TaskCard extends StatelessWidget {
     return Dismissible(
       key: Key("${task.id}_${task.hasBeenCompleted()}"),
       background: Container(
-        color: Colors.green,
+        color: task.hasBeenCompleted() ? Colors.redAccent : Colors.green,
         alignment: Alignment.centerLeft,
         padding: EdgeInsets.only(left: 20),
-        child: Icon(Icons.check, color: Colors.white),
+        child: Icon(
+          task.hasBeenCompleted() ? Icons.undo : Icons.check,
+          color: Colors.white,
+        ),
       ),
 
       secondaryBackground: Container(
@@ -31,13 +34,23 @@ class TaskCard extends StatelessWidget {
 
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
-          await FirebaseFirestore.instance
-              .collection("tasks")
-              .doc(task.id)
-              .update({
-                "has_been_completed": true,
-                "completion_timestamp": Timestamp.now(),
-              });
+          if (!task.hasBeenCompleted()) {
+            await FirebaseFirestore.instance
+                .collection("tasks")
+                .doc(task.id)
+                .update({
+                  "has_been_completed": true,
+                  "completion_timestamp": Timestamp.now(),
+                });
+          } else {
+            await FirebaseFirestore.instance
+                .collection("tasks")
+                .doc(task.id)
+                .update({
+                  "has_been_completed": false,
+                  "completion_timestamp": FieldValue.delete(),
+                });
+          }
         } else {
           onEdit(task);
         }
@@ -63,12 +76,16 @@ class TaskCard extends StatelessWidget {
               SizedBox(width: 8),
               SizedBox(
                 width: 40,
-                child: Column(
-                  children: [
-                    Text(timeDiff.$1),
-                    Text(timeDiff.$2, style: TextStyle(fontSize: 12)),
-                  ],
-                ),
+                child: task.hasBeenCompleted()
+                    ? Center(
+                        child: Text("Done", style: TextStyle(fontSize: 12)),
+                      )
+                    : Column(
+                        children: [
+                          Text(timeDiff.$1),
+                          Text(timeDiff.$2, style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
               ),
               SizedBox(height: 32, child: VerticalDivider()),
               Text(task.description),
